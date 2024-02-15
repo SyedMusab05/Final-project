@@ -1,0 +1,41 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+url_karachi = "https://en.wikipedia.org/wiki/Karachi"
+url_lahore = "https://en.wikipedia.org/wiki/Lahore"
+url_islamabad = "https://en.wikipedia.org/wiki/Islamabad"
+url_peshawar = "https://en.wikipedia.org/wiki/Peshawar"
+url_quetta = "https://en.wikipedia.org/wiki/Quetta"
+url_pakistan = "https://en.wikipedia.org/wiki/Pakistan"
+url_s = "https://en.wikipedia.org/wiki/Sindh"
+url_p = "https://en.wikipedia.org/wiki/Punjab,_Pakistan"
+url_b = "https://en.wikipedia.org/wiki/Balochistan"
+url_k = "https://en.wikipedia.org/wiki/Khyber_Pakhtunkhwa"
+
+urls = [url_karachi, url_lahore, url_islamabad, url_peshawar, url_quetta, url_pakistan, url_s, url_p, url_b, url_k]
+
+responses = []
+soups = []
+paragraphs = []
+
+for url in urls:
+    response = requests.get(url)
+    responses.append(response)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    soups.append(soup)
+    paragraphs.append([p.text for p in soup.find_all('p')])
+
+max_length = max(len(paragraph) for paragraph in paragraphs)
+
+for i in range(len(paragraphs)):
+    paragraphs[i] += [''] * (max_length - len(paragraphs[i]))
+
+data = {'Karachi': paragraphs[0], 'Lahore': paragraphs[1], 'Islamabad': paragraphs[2], 'Peshawar': paragraphs[3],
+        'Quetta': paragraphs[4], 'Pakistan': paragraphs[5], 'Sindh': paragraphs[6], 'Punjab': paragraphs[7],
+        'Balochistan': paragraphs[8], 'KPK': paragraphs[9]}
+df = pd.DataFrame(data)
+
+df.to_csv('musab.csv', index=False)
+
+print("CSV file created successfully.")
